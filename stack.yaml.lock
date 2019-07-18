@@ -3,45 +3,10 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    hackage: servant-0.12.1@sha256:e39d8ab7e27eb985233d6de26bb9acbdf60a971c802f51d03bd731f4702c660a,4804
-    pantry-tree:
-      size: 2336
-      sha256: ddc6418e2e7bada2727fad03ebf7fd488258d10460704c23edd2f061ac4b0692
-  original:
-    hackage: servant-0.12.1@sha256:e39d8ab7e27eb985233d6de26bb9acbdf60a971c802f51d03bd731f4702c660a,4804
-- completed:
-    hackage: servant-client-0.12.0.1@sha256:d8a79e6c8066b23ed165f754ddbfd88d8cab83f7d768a68085de215a69979fbf,3155
-    pantry-tree:
-      size: 589
-      sha256: cf17e653c131b5ab39236eb4702cb5db318999fe837c4d8474718b1744c7a042
-  original:
-    hackage: servant-client-0.12.0.1@sha256:d8a79e6c8066b23ed165f754ddbfd88d8cab83f7d768a68085de215a69979fbf,3155
-- completed:
-    hackage: servant-client-core-0.12@sha256:b50f8f2067f60401f210b1160005454c8200c03519a647b2889c3863a406d269,2817
-    pantry-tree:
-      size: 1204
-      sha256: 598278b0727e3eda4a885fd24792d69cfe71b3ea88684b71d2dc56080e87bc5e
-  original:
-    hackage: servant-client-core-0.12@sha256:b50f8f2067f60401f210b1160005454c8200c03519a647b2889c3863a406d269,2817
-- completed:
-    hackage: http-types-0.11@sha256:01ed82d7fd0787a07c74f17ce643580f948edec0577b611d85c99573fe44afda,2031
-    pantry-tree:
-      size: 832
-      sha256: 1077a80d77e3965945253725ba7967e8f7c3d40562ae22c456d6ca044776b435
-  original:
-    hackage: http-types-0.11@sha256:01ed82d7fd0787a07c74f17ce643580f948edec0577b611d85c99573fe44afda,2031
-- completed:
-    hackage: telegram-api-0.7.2.0@sha256:60ee6e546aaa134d1c2f889f391e3a220b1a7b3dbe7743a3277b04dae2ece38d,4125
-    pantry-tree:
-      size: 2688
-      sha256: 37ba805bd7160cfabe247845aa0dbebbce43f80a4f2c3248a800c07fc8defd48
-  original:
-    hackage: telegram-api-0.7.2.0@sha256:60ee6e546aaa134d1c2f889f391e3a220b1a7b3dbe7743a3277b04dae2ece38d,4125
+packages: []
 snapshots:
 - completed:
-    size: 527836
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/11/22.yaml
-    sha256: 341870ac98d8a9f8f77c4adf2e9e0b22063e264a7fbeb4c85b7af5f380dac60e
-  original: lts-11.22
+    size: 500539
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/13/28.yaml
+    sha256: cdde1bfb38fdee21c6acb73d506e78f7e12e0a73892adbbbe56374ebef4d3adf
+  original: lts-13.28

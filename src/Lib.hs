@@ -8,8 +8,11 @@ module Lib
       Rates,
     ) where
 
+import           System.IO.Unsafe
+import           Control.Applicative
 import           System.Environment
 import           Data.Text
+import           Data.Maybe
 import           Data.String
 import           GHC.Generics
 import           Data.Aeson
@@ -17,8 +20,10 @@ import           Data.ByteString.Lazy.Internal (ByteString)
 import           Network.HTTP.Conduit     (simpleHttp)
 import           Network.HTTP.Client      (newManager)
 import           Network.HTTP.Client.TLS  (tlsManagerSettings)
-import           Web.Telegram.API.Bot
-import           Web.Telegram.API.Bot.Data
+import           Telegram.Bot.API
+import           Telegram.Bot.Simple
+import           Telegram.Bot.Simple.UpdateParser
+import           Quotes
 
 data Rate = Rate {
      usd :: Float,
@@ -45,27 +50,65 @@ instance FromJSON Rates where
 someFunc :: IO ()
 someFunc = do
   manager <- newManager tlsManagerSettings
-  res <- cryptoRates
-  let message = case res of
-                Just rates -> formatRates rates
-                Nothing -> "Что-то пошло по пизде"
   chat_id <- lookupEnv "CHAT_ID"
-  let chatId = case chat_id of
-               Just a -> ChatChannel $ fromString a
-  let request = sendMessageRequest chatId message 
-  let myrequest = request { message_parse_mode = Just Markdown }
   bot_token <- lookupEnv "BOT_TOKEN"
   let token = case bot_token of
               Just a -> Token $ fromString a
-  res <- sendMessage token myrequest manager
-  case res of
-    Left e -> do
-      putStrLn "Request failed"
-      print e
-    Right Response { result = m } -> do
-      putStrLn "Request succeded"
-      print $ message_id m
-      print $ text m
+              Nothing -> error "Invalid token"
+  run token
+
+data Model = Model {
+}
+
+data Action
+  = NoOp
+  | Start
+  | Crypto
+  | Loglist
+  deriving (Show, Read)
+
+initialModel :: Model
+initialModel = Model {
+}
+
+echoBot :: BotApp Model Action
+echoBot = BotApp
+  { botInitialModel = initialModel
+  , botAction = flip updateToAction
+  , botHandler = handleAction
+  , botJobs = []
+  }
+
+run :: Token -> IO ()
+run token = do
+            env <- defaultTelegramClientEnv token
+            startBot_ (conversationBot updateChatId echoBot) env
+
+updateToAction :: Model -> Update -> Maybe Action
+updateToAction _ = parseUpdate $
+               Start     <$ command "start"
+           <|> Crypto    <$ command "crypto"
+           <|> Crypto    <$ command "crypto@koscbot"
+           <|> Loglist   <$ command "loglist"
+           <|> Loglist   <$ command "loglist@koscbot"
+           <|> callbackQueryDataRead
+
+replyMarkdown text = reply $ ReplyMessage text (Just Markdown) Nothing Nothing Nothing Nothing
+
+handleAction :: Action -> Model -> Eff Action Model
+handleAction action model = case action of
+  NoOp -> pure model
+  Start -> model <# do
+        replyText "Help coming soon."
+        return NoOp
+  Crypto -> model <# do
+        replyMarkdown message
+        return NoOp
+  Loglist -> model <# do
+        replyMarkdown $ fromString loglistQuote
+        return NoOp
+  where
+       message = formatRates $ (fromJust . unsafePerformIO) cryptoRates
 
 cryptoRates :: IO (Maybe Rates)
 cryptoRates = do 

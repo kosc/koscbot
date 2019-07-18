@@ -28,7 +28,7 @@ dependencies:
 - http-conduit
 - http-client
 - http-client-tls
-- telegram-api
+- telegram-bot-simple
 
 library:
   source-dirs: src

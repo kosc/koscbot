@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-11.22
+resolver: lts-13.28
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -34,12 +34,8 @@ packages:
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
 #
-extra-deps:
-- servant-0.12.1@sha256:e39d8ab7e27eb985233d6de26bb9acbdf60a971c802f51d03bd731f4702c660a,4804
-- servant-client-0.12.0.1@sha256:d8a79e6c8066b23ed165f754ddbfd88d8cab83f7d768a68085de215a69979fbf,3155
-- servant-client-core-0.12@sha256:b50f8f2067f60401f210b1160005454c8200c03519a647b2889c3863a406d269,2817
-- http-types-0.11@sha256:01ed82d7fd0787a07c74f17ce643580f948edec0577b611d85c99573fe44afda,2031
-- telegram-api-0.7.2.0@sha256:60ee6e546aaa134d1c2f889f391e3a220b1a7b3dbe7743a3277b04dae2ece38d,4125
+# extra-deps:
+
 
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
