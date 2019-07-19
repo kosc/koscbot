@@ -1,64 +1,29 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 module Lib
-    ( someFunc,
-      cryptoRates,
-      formatRates,
-      Rate,
-      Rates,
+    ( someFunc
     ) where
 
-import           System.IO.Unsafe
-import           Control.Applicative
-import           System.Environment
-import           Data.Text
-import           Data.Maybe
-import           Data.String
-import           GHC.Generics
-import           Data.Aeson
-import           Data.ByteString.Lazy.Internal (ByteString)
-import           Network.HTTP.Conduit     (simpleHttp)
-import           Network.HTTP.Client      (newManager)
-import           Network.HTTP.Client.TLS  (tlsManagerSettings)
-import           Telegram.Bot.API
-import           Telegram.Bot.Simple
-import           Telegram.Bot.Simple.UpdateParser
-import           Quotes
-
-data Rate = Rate {
-     usd :: Float,
-     rur :: Float
-} deriving (Generic, Show)
-
-instance FromJSON Rate where
-     parseJSON = withObject "Rate" $ \v -> Rate
-                 <$> v .: "USD"
-                 <*> v .: "RUR"
-
-data Rates = Rates {
-     btc :: Rate,
-     eth :: Rate,
-     xmr :: Rate
-} deriving (Generic, Show)
-
-instance FromJSON Rates where
-     parseJSON = withObject "Rates" $ \v -> Rates
-                 <$> v .: "BTC"
-                 <*> v .: "ETH"
-                 <*> v .: "XMR"
+import Control.Applicative
+import Control.Monad.IO.Class
+import System.Environment
+import Data.Text
+import Data.Maybe
+import Data.String
+import Telegram.Bot.API
+import Telegram.Bot.Simple
+import Telegram.Bot.Simple.UpdateParser
+import Quotes
+import Crypto
 
 someFunc :: IO ()
 someFunc = do
-  manager <- newManager tlsManagerSettings
-  chat_id <- lookupEnv "CHAT_ID"
   bot_token <- lookupEnv "BOT_TOKEN"
   let token = case bot_token of
               Just a -> Token $ fromString a
               Nothing -> error "Invalid token"
   run token
 
-data Model = Model {
-}
+data Model = Model {}
 
 data Action
   = NoOp
@@ -68,8 +33,7 @@ data Action
   deriving (Show, Read)
 
 initialModel :: Model
-initialModel = Model {
-}
+initialModel = Model {}
 
 echoBot :: BotApp Model Action
 echoBot = BotApp
@@ -93,7 +57,8 @@ updateToAction _ = parseUpdate $
            <|> Loglist   <$ command "loglist@koscbot"
            <|> callbackQueryDataRead
 
-replyMarkdown text = reply $ ReplyMessage text (Just Markdown) Nothing Nothing Nothing Nothing
+replyMarkdown :: Text -> BotM ()
+replyMarkdown message = reply $ ReplyMessage message (Just Markdown) Nothing Nothing Nothing Nothing
 
 handleAction :: Action -> Model -> Eff Action Model
 handleAction action model = case action of
@@ -102,21 +67,10 @@ handleAction action model = case action of
         replyText "Help coming soon."
         return NoOp
   Crypto -> model <# do
-        replyMarkdown message
+        res <- liftIO cryptoRates
+        replyMarkdown $ formatRates (fromJust res)
         return NoOp
   Loglist -> model <# do
-        replyMarkdown $ fromString loglistQuote
+        res <- liftIO loglistQuote
+        replyMarkdown $ fromString (content $ fromJust res)
         return NoOp
-  where
-       message = formatRates $ (fromJust . unsafePerformIO) cryptoRates
-
-cryptoRates :: IO (Maybe Rates)
-cryptoRates = do 
-              res <- simpleHttp "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,XMR&tsyms=USD,RUR"
-              return (decode res :: Maybe Rates)
-
-formatRates :: Rates -> Text
-formatRates rates = fromString $ "```\n" ++ rateToString "BTC" (btc rates) ++ rateToString "ETH" (eth rates) ++ rateToString "XMR" (xmr rates) ++ "```"
-
-rateToString :: String -> Rate -> String
-rateToString coin rate = coin ++ ":\n    " ++ show (usd rate) ++ " USD\n    " ++ show (rur rate) ++ " RUR\n"
