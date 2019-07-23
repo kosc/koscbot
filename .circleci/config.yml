@@ -14,3 +14,11 @@ jobs:
       - run:
           name: Install
           command: stack install
+
+      - run:
+          name: Push to VPS
+          command: scp /root/.local/bin/koscbot-exe $USERNAME@$SERVER_IP:$SERVER_PATH
+
+      - run:
+          name: Restart bot
+          command: killall koscbot-exe && ./koscbot-exe &
