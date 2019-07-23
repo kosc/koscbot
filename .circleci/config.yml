@@ -10,3 +10,7 @@ jobs:
       - run:
           name: Compile
           command: stack build
+
+      - run:
+          name: Install
+          command: stack install
