@@ -26,9 +26,15 @@ dependencies:
 - bytestring
 - containers
 - http-conduit
+- html-conduit
+- xml-conduit
 - http-client
 - http-client-tls
 - telegram-bot-simple
+- iconv
+- hxt
+- HandsomeSoup
+- utf8-string
 
 library:
   source-dirs: src

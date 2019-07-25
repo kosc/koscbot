@@ -8,12 +8,14 @@ import Control.Monad.IO.Class
 import System.Environment
 import Data.Text
 import Data.Maybe
-import Data.String
+import Data.String hiding (unlines)
 import Telegram.Bot.API
 import Telegram.Bot.Simple
 import Telegram.Bot.Simple.UpdateParser
 import Quotes
 import Crypto
+import Ibash
+import Prelude hiding (unlines)
 
 someFunc :: IO ()
 someFunc = do
@@ -30,6 +32,7 @@ data Action
   | Start
   | Crypto
   | Loglist
+  | Ibash
   deriving (Show, Read)
 
 initialModel :: Model
@@ -55,6 +58,8 @@ updateToAction _ = parseUpdate $
            <|> Crypto    <$ command "crypto@koscbot"
            <|> Loglist   <$ command "loglist"
            <|> Loglist   <$ command "loglist@koscbot"
+           <|> Ibash     <$ command "ibash"
+           <|> Ibash     <$ command "ibash@koscbot"
            <|> callbackQueryDataRead
 
 replyMarkdown :: Text -> BotM ()
@@ -64,13 +69,25 @@ handleAction :: Action -> Model -> Eff Action Model
 handleAction action model = case action of
   NoOp -> pure model
   Start -> model <# do
-        replyText "Help coming soon."
+        replyText helpMessage
         return NoOp
   Crypto -> model <# do
         res <- liftIO cryptoRates
-        replyMarkdown $ formatRates (fromJust res)
+        replyMarkdown $ case res of
+                        Just rates -> formatRates rates
+                        Nothing -> "Can't get crypto rates."
         return NoOp
   Loglist -> model <# do
         res <- liftIO loglistQuote
-        replyMarkdown $ fromString (content $ fromJust res)
+        replyMarkdown $ case res of
+                        Just quote -> fromString $ content quote
+                        Nothing -> "Can't get quote from loglist.net"
         return NoOp
+  Ibash -> model <# do
+        res <- liftIO ibashQuote
+        replyMarkdown $ fromString res
+        return NoOp
+  where helpMessage = unlines ["Simple telegram bot. Writen in Haskell."
+                              , "Source code can be found at https://github.com/kosc/koscbot"
+                              , "Any contributions are welcome."
+                              ]
