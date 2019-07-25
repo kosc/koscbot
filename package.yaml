@@ -26,8 +26,6 @@ dependencies:
 - bytestring
 - containers
 - http-conduit
-- html-conduit
-- xml-conduit
 - http-client
 - http-client-tls
 - telegram-bot-simple

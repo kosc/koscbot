@@ -12,9 +12,9 @@ import Data.String hiding (unlines)
 import Telegram.Bot.API
 import Telegram.Bot.Simple
 import Telegram.Bot.Simple.UpdateParser
-import Quotes
+import Quotes.Loglist
+import Quotes.Ibash
 import Crypto
-import Ibash
 import Prelude hiding (unlines)
 
 someFunc :: IO ()
@@ -48,19 +48,19 @@ echoBot = BotApp
 
 run :: Token -> IO ()
 run token = do
-            env <- defaultTelegramClientEnv token
-            startBot_ (conversationBot updateChatId echoBot) env
+  env <- defaultTelegramClientEnv token
+  startBot_ (conversationBot updateChatId echoBot) env
 
 updateToAction :: Model -> Update -> Maybe Action
 updateToAction _ = parseUpdate $
-               Start     <$ command "start"
-           <|> Crypto    <$ command "crypto"
-           <|> Crypto    <$ command "crypto@koscbot"
-           <|> Loglist   <$ command "loglist"
-           <|> Loglist   <$ command "loglist@koscbot"
-           <|> Ibash     <$ command "ibash"
-           <|> Ibash     <$ command "ibash@koscbot"
-           <|> callbackQueryDataRead
+  Start     <$ command "start"
+  <|> Crypto    <$ command "crypto"
+  <|> Crypto    <$ command "crypto@koscbot"
+  <|> Loglist   <$ command "loglist"
+  <|> Loglist   <$ command "loglist@koscbot"
+  <|> Ibash     <$ command "ibash"
+  <|> Ibash     <$ command "ibash@koscbot"
+  <|> callbackQueryDataRead
 
 replyMarkdown :: Text -> BotM ()
 replyMarkdown message = reply $ ReplyMessage message (Just Markdown) Nothing Nothing Nothing Nothing
@@ -69,24 +69,24 @@ handleAction :: Action -> Model -> Eff Action Model
 handleAction action model = case action of
   NoOp -> pure model
   Start -> model <# do
-        replyText helpMessage
-        return NoOp
+    replyText helpMessage
+    return NoOp
   Crypto -> model <# do
-        res <- liftIO cryptoRates
-        replyMarkdown $ case res of
-                        Just rates -> formatRates rates
-                        Nothing -> "Can't get crypto rates."
-        return NoOp
+    res <- liftIO cryptoRates
+    replyMarkdown $ case res of
+      Just rates -> formatRates rates
+      Nothing -> "Can't get crypto rates."
+    return NoOp
   Loglist -> model <# do
-        res <- liftIO loglistQuote
-        replyMarkdown $ case res of
-                        Just quote -> fromString $ content quote
-                        Nothing -> "Can't get quote from loglist.net"
-        return NoOp
+    res <- liftIO loglistQuote
+    replyMarkdown $ case res of
+      Just quote -> fromString $ content quote
+      Nothing -> "Can't get quote from loglist.net"
+    return NoOp
   Ibash -> model <# do
-        res <- liftIO ibashQuote
-        replyMarkdown $ fromString res
-        return NoOp
+    res <- liftIO ibashQuote
+    replyMarkdown $ fromString res
+    return NoOp
   where helpMessage = unlines ["Simple telegram bot. Writen in Haskell."
                               , "Source code can be found at https://github.com/kosc/koscbot"
                               , "Any contributions are welcome."
