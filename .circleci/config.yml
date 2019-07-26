@@ -20,12 +20,20 @@ jobs:
           command: apt update; apt install -y openssh-client
 
       - run:
+          name: Make .ssh dir
+          command: mkdir ~/.ssh
+
+      - run:
           name: Add server to known_hosts
           command: ssh-keyscan $SERVER_IP >> ~/.ssh/known_hosts
 
       - run:
           name: Push to VPS
           command: scp /root/.local/bin/koscbot-exe $USERNAME@$SERVER_IP:$SERVER_PATH
+
+      - run:
+          name: Export bot token
+          command: export BOT_TOKEN=$BOT_TOKEN
 
       - run:
           name: Restart bot
