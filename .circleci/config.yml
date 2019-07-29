@@ -29,7 +29,7 @@ jobs:
 
       - run:
           name: Stop currently running bot
-          command: ssh $USERNAME@SERVER_IP "killall koscbot-exe"
+          command: ssh $USERNAME@$SERVER_IP "killall koscbot-exe"
 
       - run:
           name: Push to VPS
