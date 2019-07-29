@@ -33,7 +33,7 @@ jobs:
 
       - run:
           name: Export bot token
-          command: export BOT_TOKEN=$BOT_TOKEN
+          command: ssh $USERNAME@$SERVER_IP "export BOT_TOKEN=$BOT_TOKEN"
 
       - run:
           name: Restart bot
