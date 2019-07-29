@@ -28,6 +28,10 @@ jobs:
           command: ssh-keyscan $SERVER_IP >> ~/.ssh/known_hosts
 
       - run:
+          name: Stop currently running bot
+          command: ssh $USERNAME@SERVER_IP "killall koscbot-exe"
+
+      - run:
           name: Push to VPS
           command: scp /root/.local/bin/koscbot-exe $USERNAME@$SERVER_IP:$SERVER_PATH
 
@@ -36,5 +40,5 @@ jobs:
           command: ssh $USERNAME@$SERVER_IP "export BOT_TOKEN=$BOT_TOKEN"
 
       - run:
-          name: Restart bot
-          command: ssh $USERNAME@$SERVER_IP "killall koscbot-exe && ./koscbot-exe &"
+          name: Start bot
+          command: ssh $USERNAME@$SERVER_IP "/home/koscbot/koscbot-exe &"
