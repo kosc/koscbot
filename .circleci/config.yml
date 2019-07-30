@@ -38,4 +38,3 @@ jobs:
       - run:
           name: Export bot token and start bot
           command: ssh $USERNAME@$SERVER_IP "export BOT_TOKEN=$BOT_TOKEN; nohup $SERVER_PATHkoscbot-exe > log.out 2> log.err < /dev/null &"
-          background: true
