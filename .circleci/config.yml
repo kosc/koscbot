@@ -36,5 +36,5 @@ jobs:
           command: scp /root/.local/bin/koscbot-exe $USERNAME@$SERVER_IP:$SERVER_PATH
 
       - run:
-          name: Export bot token and start bot
-          command: ssh $USERNAME@$SERVER_IP "export BOT_TOKEN=$BOT_TOKEN; nohup $SERVER_PATHkoscbot-exe > log.out 2> log.err < /dev/null &"
+          name: Start bot
+          command: ssh $USERNAME@$SERVER_IP "nohup $SERVER_PATHkoscbot-exe > log.out 2> log.err < /dev/null &"
