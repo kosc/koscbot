@@ -40,5 +40,5 @@ jobs:
           command: |
             ssh $USERNAME@$SERVER_IP << ENDSSH
             cd $SERVER_PATH
-            ./koscbot-exe &
+            ./koscbot-exe > /dev/null &
             ENDSSH
