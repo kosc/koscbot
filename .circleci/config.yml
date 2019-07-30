@@ -37,4 +37,8 @@ jobs:
 
       - run:
           name: Start bot
-          command: ssh $USERNAME@$SERVER_IP "nohup $SERVER_PATHkoscbot-exe > log.out 2> log.err < /dev/null &"
+          command: |
+            ssh $USERNAME@$SERVER_IP << ENDSSH
+            cd $SERVER_PATH
+            ./koscbot-exe &
+            ENDSSH
