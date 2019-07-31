@@ -28,11 +28,12 @@ dependencies:
 - http-conduit
 - http-client
 - http-client-tls
-- telegram-bot-simple
 - iconv
 - hxt
 - HandsomeSoup
 - utf8-string
+- logging
+- telegram-bot-simple
 
 library:
   source-dirs: src

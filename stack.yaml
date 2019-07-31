@@ -34,8 +34,10 @@ packages:
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
 #
-# extra-deps:
-
+extra-deps:
+- logging-3.0.5@sha256:88096d3124fce9a19af3720f751e1a354d866ed5030d2e5197238d2277cdb2f2,2374
+- git: https://github.com/kosc/telegram-bot-simple.git
+  commit: 59e162266859af973ccce17e9086a31c086a0cde
 
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
