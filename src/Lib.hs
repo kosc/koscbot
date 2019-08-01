@@ -32,7 +32,7 @@ data Action
   | Start
   | Crypto
   | Loglist
-  | Ibash Text
+  | Ibash
   deriving (Show, Read)
 
 initialModel :: Model
@@ -51,24 +51,21 @@ run token = do
   env <- defaultTelegramClientEnv token
   startBot_ (conversationBot updateChatId echoBot) env
 
--- parseUpdate :: UpdateParser a -> Update -> Maybe a
--- Expected type: Model -> Maybe Action
--- Actual type: Update -> Maybe Action
---
+blacklist = ["tav0x222"]
 
 updateToAction :: Model -> Update -> Maybe Action
 updateToAction _ update = 
   let croppedMessage = fromJust . updateMessageText $ update
       username = fromJust $ userUsername . fromJust . messageFrom . fromJust $ updateMessage update
-      parser =
-            Start          <$ command "start"
-        <|> Crypto         <$ command "start@koscbot"
-        <|> Crypto         <$ command "crypto"
-        <|> Crypto         <$ command "crypto@koscbot"
-        <|> Loglist        <$ command "loglist"
-        <|> Loglist        <$ command "loglist@koscbot"
-        <|> Ibash username <$ command "ibash"
-        <|> Ibash username <$ command "ibash@koscbot"
+      parser = if elem username blacklist then UpdateParser {runUpdateParser = \update -> Nothing} else
+            Start   <$ command "start"
+        <|> Crypto  <$ command "start@koscbot"
+        <|> Crypto  <$ command "crypto"
+        <|> Crypto  <$ command "crypto@koscbot"
+        <|> Loglist <$ command "loglist"
+        <|> Loglist <$ command "loglist@koscbot"
+        <|> Ibash   <$ command "ibash"
+        <|> Ibash   <$ command "ibash@koscbot"
   in parseUpdate parser update
 
 replyMarkdown :: Text -> BotM ()
@@ -92,13 +89,9 @@ handleAction action model = case action of
       Just quote -> fromString $ content quote
       Nothing -> "Can't get quote from loglist.net"
     return NoOp
-  Ibash username -> model <# do
-    liftIO $ print username
+  Ibash -> model <# do
     res <- liftIO ibashQuote
-    case username of
-      "tav0x222" -> replyMarkdown ""
-      _ -> replyMarkdown $ fromString res
-    
+    replyMarkdown $ fromString res
     return NoOp
   where helpMessage = unlines ["Simple telegram bot. Writen in Haskell."
                               , "Source code can be found at https://github.com/kosc/koscbot"
