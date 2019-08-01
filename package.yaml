@@ -33,6 +33,8 @@ dependencies:
 - HandsomeSoup
 - utf8-string
 - logging
+- transformers
+- mtl
 - telegram-bot-simple
 
 library:

@@ -6,16 +6,16 @@ module Lib
 import Control.Applicative
 import Control.Monad.IO.Class
 import System.Environment
-import Data.Text
+import Data.Text 
 import Data.Maybe
-import Data.String hiding (unlines)
+import Data.String hiding (unlines, words)
 import Telegram.Bot.API
 import Telegram.Bot.Simple
 import Telegram.Bot.Simple.UpdateParser
 import Quotes.Loglist
 import Quotes.Ibash
 import Crypto
-import Prelude hiding (unlines)
+import Prelude hiding (unlines, head, words)
 
 someFunc :: IO ()
 someFunc = do
@@ -32,7 +32,7 @@ data Action
   | Start
   | Crypto
   | Loglist
-  | Ibash
+  | Ibash Text
   deriving (Show, Read)
 
 initialModel :: Model
@@ -51,16 +51,25 @@ run token = do
   env <- defaultTelegramClientEnv token
   startBot_ (conversationBot updateChatId echoBot) env
 
+-- parseUpdate :: UpdateParser a -> Update -> Maybe a
+-- Expected type: Model -> Maybe Action
+-- Actual type: Update -> Maybe Action
+--
+
 updateToAction :: Model -> Update -> Maybe Action
-updateToAction _ = parseUpdate $
-  Start     <$ command "start"
-  <|> Crypto    <$ command "crypto"
-  <|> Crypto    <$ command "crypto@koscbot"
-  <|> Loglist   <$ command "loglist"
-  <|> Loglist   <$ command "loglist@koscbot"
-  <|> Ibash     <$ command "ibash"
-  <|> Ibash     <$ command "ibash@koscbot"
-  <|> callbackQueryDataRead
+updateToAction _ update = 
+  let croppedMessage = fromJust . updateMessageText $ update
+      username = fromJust $ userUsername . fromJust . messageFrom . fromJust $ updateMessage update
+      parser =
+            Start          <$ command "start"
+        <|> Crypto         <$ command "start@koscbot"
+        <|> Crypto         <$ command "crypto"
+        <|> Crypto         <$ command "crypto@koscbot"
+        <|> Loglist        <$ command "loglist"
+        <|> Loglist        <$ command "loglist@koscbot"
+        <|> Ibash username <$ command "ibash"
+        <|> Ibash username <$ command "ibash@koscbot"
+  in parseUpdate parser update
 
 replyMarkdown :: Text -> BotM ()
 replyMarkdown message = reply $ ReplyMessage message (Just Markdown) Nothing Nothing Nothing Nothing
@@ -83,9 +92,13 @@ handleAction action model = case action of
       Just quote -> fromString $ content quote
       Nothing -> "Can't get quote from loglist.net"
     return NoOp
-  Ibash -> model <# do
+  Ibash username -> model <# do
+    liftIO $ print username
     res <- liftIO ibashQuote
-    replyMarkdown $ fromString res
+    case username of
+      "tav0x222" -> replyMarkdown ""
+      _ -> replyMarkdown $ fromString res
+    
     return NoOp
   where helpMessage = unlines ["Simple telegram bot. Writen in Haskell."
                               , "Source code can be found at https://github.com/kosc/koscbot"
