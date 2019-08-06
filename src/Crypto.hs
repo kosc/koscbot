@@ -19,6 +19,7 @@ data Rates = Rates
   { btc :: Rate
   , eth :: Rate
   , xmr :: Rate
+  , met :: Rate
   } deriving (Generic, Show)
 
 instance FromJSON Rate where
@@ -31,14 +32,15 @@ instance FromJSON Rates where
     <$> v .: "BTC"
     <*> v .: "ETH"
     <*> v .: "XMR"
+    <*> v .: "MET"
 
 cryptoRates :: IO (Maybe Rates)
 cryptoRates = do 
-  res <- simpleHttp "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,XMR&tsyms=USD,RUR"
+  res <- simpleHttp "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,XMR,MET&tsyms=USD,RUR"
   return (decode res :: Maybe Rates)
 
 formatRates :: Rates -> Text
-formatRates rates = fromString $ "```\n" ++ rateToString "BTC" (btc rates) ++ rateToString "ETH" (eth rates) ++ rateToString "XMR" (xmr rates) ++ "```"
+formatRates rates = fromString $ "```\n" ++ rateToString "BTC" (btc rates) ++ rateToString "ETH" (eth rates) ++ rateToString "XMR" (xmr rates) ++ rateToString "MET" (met rates) ++ "```"
 
 rateToString :: String -> Rate -> String
 rateToString coin rate = coin ++ ":\n    " ++ show (usd rate) ++ " USD\n    " ++ show (rur rate) ++ " RUR\n"
