@@ -36,6 +36,8 @@ dependencies:
 - transformers
 - mtl
 - telegram-bot-simple
+- postgresql-simple
+- Only
 
 library:
   source-dirs: src

@@ -1,14 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 module Lib
     ( someFunc
     ) where
 
 import Control.Applicative
+import Control.Monad
 import Control.Monad.IO.Class
 import System.Environment
-import Data.Text 
+import Data.Text hiding (concat, map)
 import Data.Maybe
+import Data.Tuple.Only
 import Data.String hiding (unlines, words)
+import Database.PostgreSQL.Simple
 import Telegram.Bot.API
 import Telegram.Bot.Simple
 import Telegram.Bot.Simple.UpdateParser
@@ -25,7 +29,9 @@ someFunc = do
               Nothing -> error "Invalid token"
   run token
 
-data Model = Model {}
+data Model = Model {
+  blacklist :: [String]
+}
 
 data Action
   = NoOp
@@ -36,11 +42,11 @@ data Action
   deriving (Show, Read)
 
 initialModel :: Model
-initialModel = Model {}
+initialModel = Model { blacklist = [] }
 
-echoBot :: BotApp Model Action
-echoBot = BotApp
-  { botInitialModel = initialModel
+echoBot :: [String] -> BotApp Model Action
+echoBot blist = BotApp
+  { botInitialModel = initialModel { blacklist = blist }
   , botAction = flip updateToAction
   , botHandler = handleAction
   , botJobs = []
@@ -49,16 +55,30 @@ echoBot = BotApp
 run :: Token -> IO ()
 run token = do
   env <- defaultTelegramClientEnv token
-  startBot_ (conversationBot updateChatId echoBot) env
+  blacklist <- getBlacklist
+  startBot_ (conversationBot updateChatId (echoBot blacklist)) env
 
-blacklist = ["tav0x222"]
+dbConnection = do
+  db_username <- fromMaybe "koscbot" <$> lookupEnv "DATABASE_USERNAME"
+  db_name <- fromMaybe "koscbot" <$> lookupEnv "DATABASE_NAME"
+  db_password <- fromMaybe "" <$> lookupEnv "DATABASE_PASSWORD"
+  connect defaultConnectInfo {
+    connectDatabase = db_name,
+    connectUser = db_username,
+    connectPassword = db_password
+  }
+
+getBlacklist = do
+  conn <- dbConnection
+  users <- query_ conn "select username from blacklist" :: IO [Only String]
+  return $ map fromOnly users
 
 updateToAction :: Model -> Update -> Maybe Action
-updateToAction _ update = 
+updateToAction model update = 
   let croppedMessage = fromJust . updateMessageText $ update
       username = fromJust $ userUsername . fromJust . messageFrom . fromJust $ updateMessage update
-      parser = if elem username blacklist then UpdateParser {runUpdateParser = \update -> Nothing} else
-            Start   <$ command "start"
+      parser = if elem username (map pack (blacklist model)) then UpdateParser {runUpdateParser = \update -> Nothing} else
+        Start   <$ command "start"
         <|> Crypto  <$ command "start@koscbot"
         <|> Crypto  <$ command "crypto"
         <|> Crypto  <$ command "crypto@koscbot"
