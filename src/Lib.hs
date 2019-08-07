@@ -4,6 +4,7 @@ module Lib
     ( someFunc
     ) where
 
+import Layout
 import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class
@@ -37,9 +38,11 @@ data Action
   = NoOp
   | Start
   | Crypto
+  | Switch (Maybe Message)
   | Loglist
   | Ibash
-  deriving (Show, Read)
+  deriving (Show)
+  -- deriving (Show, Read)
 
 initialModel :: Model
 initialModel = Model { blacklist = [] }
@@ -77,15 +80,18 @@ updateToAction :: Model -> Update -> Maybe Action
 updateToAction model update = 
   let croppedMessage = fromJust . updateMessageText $ update
       username = fromJust $ userUsername . fromJust . messageFrom . fromJust $ updateMessage update
+      message = messageReplyToMessage . fromJust $ updateMessage update
       parser = if elem username (map pack (blacklist model)) then UpdateParser {runUpdateParser = \update -> Nothing} else
-        Start   <$ command "start"
-        <|> Crypto  <$ command "start@koscbot"
-        <|> Crypto  <$ command "crypto"
-        <|> Crypto  <$ command "crypto@koscbot"
-        <|> Loglist <$ command "loglist"
-        <|> Loglist <$ command "loglist@koscbot"
-        <|> Ibash   <$ command "ibash"
-        <|> Ibash   <$ command "ibash@koscbot"
+        Start              <$ command "start"
+        <|> Start          <$ command "start@koscbot"
+        <|> Crypto         <$ command "crypto"
+        <|> Crypto         <$ command "crypto@koscbot"
+        <|> Switch message <$ command "switch" 
+        <|> Switch message <$ command "switch@koscbot" 
+        <|> Loglist        <$ command "loglist"
+        <|> Loglist        <$ command "loglist@koscbot"
+        <|> Ibash          <$ command "ibash"
+        <|> Ibash          <$ command "ibash@koscbot"
   in parseUpdate parser update
 
 replyMarkdown :: Text -> BotM ()
@@ -102,6 +108,11 @@ handleAction action model = case action of
     replyMarkdown $ case res of
       Just rates -> formatRates rates
       Nothing -> "Can't get crypto rates."
+    return NoOp
+  Switch message -> model <# do
+    case message of
+      Just msg -> replyMarkdown $ fromString $ changeLayout $ unpack (fromJust $ messageText msg)
+      Nothing -> replyMarkdown $ fromString "Error! You should reply with this command to message with wrong layout."
     return NoOp
   Loglist -> model <# do
     res <- liftIO loglistQuote
