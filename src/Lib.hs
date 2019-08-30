@@ -9,6 +9,7 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class
 import System.Environment
+import Database (dbConnection)
 import Data.Text hiding (concat, map)
 import Data.Maybe
 import Data.Tuple.Only
@@ -60,16 +61,6 @@ run token = do
   env <- defaultTelegramClientEnv token
   blacklist <- getBlacklist
   startBot_ (conversationBot updateChatId (echoBot blacklist)) env
-
-dbConnection = do
-  db_username <- fromMaybe "koscbot" <$> lookupEnv "DATABASE_USERNAME"
-  db_name <- fromMaybe "koscbot" <$> lookupEnv "DATABASE_NAME"
-  db_password <- fromMaybe "" <$> lookupEnv "DATABASE_PASSWORD"
-  connect defaultConnectInfo {
-    connectDatabase = db_name,
-    connectUser = db_username,
-    connectPassword = db_password
-  }
 
 getBlacklist = do
   conn <- dbConnection

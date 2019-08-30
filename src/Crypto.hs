@@ -1,42 +1,41 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Crypto ( cryptoRates
               , formatRates
               ) where
 
-import GHC.Generics
-import Data.String
+import GHC.Generics (Generic)
+import Database (getCurrencies, getCryptoCurriencies)
+import Database.PostgreSQL.Simple
 import Data.Aeson
-import Data.Text
+import Data.Aeson.TH
+import Data.Char (toLower, toUpper)
+import Data.List (intercalate)
+import Data.Monoid
+import Data.String
+import Data.Text (Text)
+import Language.Haskell.TH
 import Network.HTTP.Conduit (simpleHttp)
+import Templates.Rates (mkRates, Rate(..))
 
-data Rate = Rate 
-  { usd :: Float
-  , rur :: Float
-  } deriving (Generic, Show)
+$(do 
+  currencies <- runIO getCryptoCurriencies
+  mkRates $ map (map toLower) currencies)
 
-data Rates = Rates 
-  { btc :: Rate
-  , eth :: Rate
-  , xmr :: Rate
-  , met :: Rate
-  } deriving (Generic, Show)
+$(deriveJSON defaultOptions{fieldLabelModifier = map toUpper} ''Rate)
+$(deriveJSON defaultOptions{fieldLabelModifier = map toUpper} ''Rates)
 
-instance FromJSON Rate where
-  parseJSON = withObject "Rate" $ \v -> Rate
-    <$> v .: "USD"
-    <*> v .: "RUR"
-
-instance FromJSON Rates where
-  parseJSON = withObject "Rates" $ \v -> Rates
-    <$> v .: "BTC"
-    <*> v .: "ETH"
-    <*> v .: "XMR"
-    <*> v .: "MET"
+makeUrl :: IO String
+makeUrl = do
+  cryptoCurrencties <- getCryptoCurriencies
+  currencies <- getCurrencies
+  return $ "https://min-api.cryptocompare.com/data/pricemulti?fsyms="++(intercalate "," cryptoCurrencties)++"&tsyms="++(intercalate "," currencies)
 
 cryptoRates :: IO (Maybe Rates)
-cryptoRates = do 
-  res <- simpleHttp "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,XMR,MET&tsyms=USD,RUR"
+cryptoRates = do
+  url <- makeUrl
+  res <- simpleHttp url
   return (decode res :: Maybe Rates)
 
 formatRates :: Rates -> Text

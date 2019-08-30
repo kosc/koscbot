@@ -38,6 +38,7 @@ dependencies:
 - telegram-bot-simple
 - postgresql-simple
 - Only
+- template-haskell
 
 library:
   source-dirs: src
