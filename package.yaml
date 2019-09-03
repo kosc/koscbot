@@ -38,7 +38,8 @@ dependencies:
 - telegram-bot-simple
 - postgresql-simple
 - Only
-- template-haskell
+- lens-aeson
+- lens
 
 library:
   source-dirs: src

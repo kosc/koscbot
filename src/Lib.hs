@@ -96,9 +96,8 @@ handleAction action model = case action of
     return NoOp
   Crypto -> model <# do
     res <- liftIO cryptoRates
-    replyMarkdown $ case res of
-      Just rates -> formatRates rates
-      Nothing -> "Can't get crypto rates."
+    message <- liftIO $ formatCryptos res
+    replyMarkdown $ fromString message
     return NoOp
   Switch message -> model <# do
     case message of
