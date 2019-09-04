@@ -6,11 +6,7 @@ module Quotes.Loglist ( loglistQuote
 
 import Network.HTTP.Conduit 
 import Data.Aeson
-import Data.String
 import GHC.Generics
-import Data.ByteString.UTF8 (toString)
-import Data.Text as T
-import Data.ByteString.Lazy as BS
 
 data LoglistQuote = LoglistQuote
   { id :: String

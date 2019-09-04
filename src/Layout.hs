@@ -1,10 +1,11 @@
 module Layout (changeLayout) where
 
 import qualified Data.Map as Map
-import Data.Maybe (fromMaybe)
 
+mapping :: Map.Map Char Char
 mapping = Map.fromList $ zip "qwertyuiop[]asdfghjkl;'\\zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"|ZXCVBNM<>?" "йцукенгшщзхъфывапролджэ\\ячсмитьбю.ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ,"
 
+findChar :: Char -> Char
 findChar c = let l = Map.lookup c mapping
              in case l of
                 Just a -> a

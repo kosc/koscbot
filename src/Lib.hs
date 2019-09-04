@@ -1,14 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 module Lib
-    ( someFunc
+    ( run
     ) where
 
 import Layout
 import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class
-import System.Environment
 import Database (dbConnection)
 import Data.Text hiding (concat, map)
 import Data.Maybe
@@ -23,14 +22,6 @@ import Quotes.Ibash
 import Crypto
 import Prelude hiding (unlines, head, words)
 
-someFunc :: IO ()
-someFunc = do
-  bot_token <- lookupEnv "BOT_TOKEN"
-  let token = case bot_token of
-              Just a -> Token $ fromString a
-              Nothing -> error "Invalid token"
-  run token
-
 data Model = Model {
   blacklist :: [String]
 }
@@ -43,7 +34,6 @@ data Action
   | Loglist
   | Ibash
   deriving (Show)
-  -- deriving (Show, Read)
 
 initialModel :: Model
 initialModel = Model { blacklist = [] }
@@ -59,9 +49,10 @@ echoBot blist = BotApp
 run :: Token -> IO ()
 run token = do
   env <- defaultTelegramClientEnv token
-  blacklist <- getBlacklist
-  startBot_ (conversationBot updateChatId (echoBot blacklist)) env
+  black_list <- getBlacklist
+  startBot_ (conversationBot updateChatId (echoBot black_list)) env
 
+getBlacklist :: IO [String]
 getBlacklist = do
   conn <- dbConnection
   users <- query_ conn "select username from blacklist" :: IO [Only String]
@@ -69,10 +60,9 @@ getBlacklist = do
 
 updateToAction :: Model -> Update -> Maybe Action
 updateToAction model update = 
-  let croppedMessage = fromJust . updateMessageText $ update
-      username = fromJust $ userUsername . fromJust . messageFrom . fromJust $ updateMessage update
+  let username = fromJust $ userUsername . fromJust . messageFrom . fromJust $ updateMessage update
       message = messageReplyToMessage . fromJust $ updateMessage update
-      parser = if elem username (map pack (blacklist model)) then UpdateParser {runUpdateParser = \update -> Nothing} else
+      parser = if elem username (map pack (blacklist model)) then UpdateParser {runUpdateParser = \_ -> Nothing} else
         Start              <$ command "start"
         <|> Start          <$ command "start@koscbot"
         <|> Crypto         <$ command "crypto"

@@ -37,7 +37,7 @@ packages:
 extra-deps:
 - logging-3.0.5@sha256:88096d3124fce9a19af3720f751e1a354d866ed5030d2e5197238d2277cdb2f2,2374
 - git: https://github.com/kosc/telegram-bot-simple.git
-  commit: 59e162266859af973ccce17e9086a31c086a0cde
+  commit: 3f4eec0a8b39415ca8abb70b1c61f5885b3f5e9d
 
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
