@@ -75,8 +75,11 @@ updateToAction model update =
         <|> Ibash          <$ command "ibash@koscbot"
   in parseUpdate parser update
 
-replyHTML :: Text -> BotM ()
-replyHTML message = reply $ ReplyMessage message (Just HTML) Nothing Nothing Nothing Nothing
+replyMessage :: Text -> BotM ()
+replyMessage message = reply $ ReplyMessage message Nothing Nothing Nothing Nothing Nothing
+
+replyMarkdown :: Text -> BotM ()
+replyMarkdown message = reply $ ReplyMessage message (Just Markdown) Nothing Nothing Nothing Nothing
 
 handleAction :: Action -> Model -> Eff Action Model
 handleAction action model = case action of
@@ -87,22 +90,23 @@ handleAction action model = case action of
   Crypto -> model <# do
     res <- liftIO cryptoRates
     message <- liftIO $ formatCryptos res
-    replyHTML $ fromString message
+    replyMarkdown $ fromString message
     return NoOp
   Switch message -> model <# do
     case message of
-      Just msg -> replyHTML $ fromString $ changeLayout $ unpack (fromJust $ messageText msg)
-      Nothing -> replyHTML $ fromString "Error! You should reply with this command to message with wrong layout."
+      Just msg -> replyMessage $ fromString $ changeLayout $ unpack (fromJust $ messageText msg)
+      Nothing -> replyMessage $ fromString "Error! You should reply with this command to message with wrong layout."
     return NoOp
   Loglist -> model <# do
     res <- liftIO loglistQuote
-    replyHTML $ case res of
+    liftIO $ print res
+    replyMessage $ case res of
       Just quote -> fromString $ content quote
       Nothing -> "Can't get quote from loglist.net"
     return NoOp
   Ibash -> model <# do
     res <- liftIO ibashQuote
-    replyHTML $ fromString res
+    replyMessage $ fromString res
     return NoOp
   where helpMessage = unlines ["Simple telegram bot. Writen in Haskell."
                               , "Source code can be found at https://github.com/kosc/koscbot"
