@@ -40,6 +40,7 @@ dependencies:
 - Only
 - lens-aeson
 - lens
+- bimap
 
 library:
   source-dirs: src

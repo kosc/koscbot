@@ -109,6 +109,6 @@ handleAction action model = case action of
     replyMessage $ fromString res
     return NoOp
   where helpMessage = unlines ["Simple telegram bot. Writen in Haskell."
-                              , "Source code can be found by the https://github.com/kosc/koscbot"
+                              , "Source code can be found on https://github.com/kosc/koscbot"
                               , "Any contributions are welcome."
                               ]

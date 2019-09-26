@@ -1,15 +1,13 @@
 module Layout (changeLayout) where
 
-import qualified Data.Map as Map
+import qualified Data.Bimap as Bimap
 
-mapping :: Map.Map Char Char
-mapping = Map.fromList $ zip "qwertyuiop[]asdfghjkl;'\\zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"|ZXCVBNM<>?" "йцукенгшщзхъфывапролджэ\\ячсмитьбю.ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ,"
+mapping = Bimap.fromList $ zip "qwertyuiop[]asdfghjkl;'\\zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"|ZXCVBNM<>?" "йцукенгшщзхъфывапролджэ\\ячсмитьбю.ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ,"
 
-findChar :: Char -> Char
-findChar c = let l = Map.lookup c mapping
-             in case l of
-                Just a -> a
-                Nothing -> c
+findChar c = if Bimap.member c mapping then
+                mapping Bimap.! c
+             else if Bimap.memberR c mapping then
+                mapping Bimap.!> c
+             else c
 
-changeLayout :: String -> String
 changeLayout str = map (findChar) str
