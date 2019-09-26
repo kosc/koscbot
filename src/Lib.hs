@@ -67,16 +67,16 @@ updateToAction model update =
         <|> Start          <$ command "start@koscbot"
         <|> Crypto         <$ command "crypto"
         <|> Crypto         <$ command "crypto@koscbot"
-        <|> Switch message <$ command "switch" 
-        <|> Switch message <$ command "switch@koscbot" 
+        <|> Switch message <$ command "switch"
+        <|> Switch message <$ command "switch@koscbot"
         <|> Loglist        <$ command "loglist"
         <|> Loglist        <$ command "loglist@koscbot"
         <|> Ibash          <$ command "ibash"
         <|> Ibash          <$ command "ibash@koscbot"
   in parseUpdate parser update
 
-replyMarkdown :: Text -> BotM ()
-replyMarkdown message = reply $ ReplyMessage message (Just Markdown) Nothing Nothing Nothing Nothing
+replyHTML :: Text -> BotM ()
+replyHTML message = reply $ ReplyMessage message (Just HTML) Nothing Nothing Nothing Nothing
 
 handleAction :: Action -> Model -> Eff Action Model
 handleAction action model = case action of
@@ -87,22 +87,22 @@ handleAction action model = case action of
   Crypto -> model <# do
     res <- liftIO cryptoRates
     message <- liftIO $ formatCryptos res
-    replyMarkdown $ fromString message
+    replyHTML $ fromString message
     return NoOp
   Switch message -> model <# do
     case message of
-      Just msg -> replyMarkdown $ fromString $ changeLayout $ unpack (fromJust $ messageText msg)
-      Nothing -> replyMarkdown $ fromString "Error! You should reply with this command to message with wrong layout."
+      Just msg -> replyHTML $ fromString $ changeLayout $ unpack (fromJust $ messageText msg)
+      Nothing -> replyHTML $ fromString "Error! You should reply with this command to message with wrong layout."
     return NoOp
   Loglist -> model <# do
     res <- liftIO loglistQuote
-    replyMarkdown $ case res of
+    replyHTML $ case res of
       Just quote -> fromString $ content quote
       Nothing -> "Can't get quote from loglist.net"
     return NoOp
   Ibash -> model <# do
     res <- liftIO ibashQuote
-    replyMarkdown $ fromString res
+    replyHTML $ fromString res
     return NoOp
   where helpMessage = unlines ["Simple telegram bot. Writen in Haskell."
                               , "Source code can be found at https://github.com/kosc/koscbot"
