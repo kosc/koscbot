@@ -21,5 +21,5 @@ instance FromJSON LoglistQuote
 
 loglistQuote :: IO (Maybe LoglistQuote)
 loglistQuote = do
-  res <- simpleHttp "https://loglist.net/api/quote/random"
+  res <- simpleHttp "https://loglist.xyz/api/quote/random"
   return (decode res :: Maybe LoglistQuote)
